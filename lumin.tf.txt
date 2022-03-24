@@ -1,0 +1,60 @@
+provider "aws" {
+access_key = "AKIA3KTBQOS4WK22JIGS"
+secret_key = "THpv0otTlOnWR151smp7dFdtMyWmuDO92W1QzdDe"
+region = "us-east-1"
+}
+resource "aws_instance" "ec2_example {
+    ami = "ami-00068cd7555f543d5"
+    instance_type = "t2.micro"
+    key_name = "aws_key1"
+    vpc_security_group_ids = [aws_security_group.main.id]
+
+  provisioner "file" {
+  source  = "/home/ec2-user/sample/read.txt"
+  destination = "/home/ec2-user/terr-ansible/read.txt"
+}
+  connection {
+type    	= "ssh"
+host     	= self.public_ip
+user       	= "ubuntu"
+private_key 	= file("/home/ec2-user/keys/aws_key1")
+timeout     	= "4m"
+  }
+}
+
+resource "aws_security_group" "main" {
+  egress = [
+    {
+      cidr_blocks	= [ "0.0.0.0/0", ]
+      description 	= ""
+      from_port         = 0
+      ipv6_cidr_blocks	= []
+      prefix_list_ids	= []
+      protocol		= "-1"
+      security_groups   = []
+      self 		= false
+      to_port		= 0
+    }
+  ]
+  ingress= [
+   {
+     cidr_blocks        = [ "0.0.0.0/0", ]
+     description	= ""
+     from_port		= 22
+     ipv6_cidr_blocks	= []
+     prefix_list_ids	= []
+     protocol		= "tcp"
+     security_groups	= []
+     self 		= false
+     to_port		= 22
+  }
+ ]
+}
+
+resource "aws_key_pair" "deployer" {
+  key_name = "aws_key1"
+  public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDUJ9Jv996nqmU3O1NWzkA3/Z4zyL0QH0sEzSiVfoBWD8QYX7Fk6N2zjMgrKn/K6wIReYgy5tz9NXDX2rZW
+Ixyt3GY2X3Ra9/SufZplBSNcDk/yEiFgeI41pFf/+FsNtweMOeY7W5Mx6LHvl62WhnyzF8TJgYumf+w9f5tbSAhzuYazS9u0a+11Hdsi845ffA/iBKCw+vtLQP86Au2DM1vQqgRs
+8V5Fr4PrQe77vrcZq7i+/Il3Sk/UK7qh1wQcV76h0DmQN5sav4r3O2aLV5sSFilLzCUDu5E9OTWS8lQYHi8zUapOMqBz9zG+AM526h5HbyNKVuK0K92NBfJa5CvR root@ip-172
+-31-86-244.ec2.internal"
+}
